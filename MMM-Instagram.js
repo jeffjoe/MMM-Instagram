@@ -78,17 +78,19 @@ Module.register('MMM-Instagram', {
         
         var tempimage = this.images.photo[this.activeItem];
         
-        // image
-        //imageLink.innerHTML = "<img src='https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png'>";
+        // image       
+	//imageLink.innerHTML = "<img src='https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png'>";
+        
 
         var imageWrapper = document.createElement("img");
-	    imageWrapper.src = tempimpage.photolink;
-	    imageWrapper.id = "MMM-Instagram-image"
+	    imageWrapper.src = tempimage.photolink;
+	    imageWrapper.id = "MMM-Instagram-image";
 	    imageWrapper.style.maxWidth = this.config.instaMaxWidth;
 	    imageWrapper.style.maxHeight = this.config.instaMaxHeight;
 	    imageDisplay.appendChild(imageWrapper);
         
-        wrapper.appendChild(imageDisplay);
+
+	wrapper.appendChild(imageDisplay);
        
         return wrapper;
     },
