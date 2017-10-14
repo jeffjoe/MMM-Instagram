@@ -10,6 +10,7 @@
 Module.register('MMM-Instagram', {
 
     defaults: {
+        apiUrl: 'https://api.instagram.com/v1/users/self/media/recent',
         format: 'json',
         lang: 'en-us',
         id: '',
@@ -22,19 +23,12 @@ Module.register('MMM-Instagram', {
         instaMaxHeight: '100%',
         loadingText: 'Loading...'
     },
-    
+
     // Define required scripts
     getScripts: function() {
         return ["moment.js"];
     },
-    
-    /*
-    // Define required translations
-    getTranslations: function() {
-        return false;
-    },
-    */
-    
+
     // Define start sequence
     start: function() {
         Log.info('Starting module: ' + this.name);
@@ -42,21 +36,10 @@ Module.register('MMM-Instagram', {
         this.loaded = false;
         this.images = {};
         this.activeItem = 0;
-        this.url = 'https://api.instagram.com/v1/users/self/media/recent' + this.getParams();
-        this.grabPhotos();
+        this.apiUrls = this.getApiUrls();
+        this.sendSocketNotification("INSTAGRAM_GET", this.apiUrls);
     },
 
-    grabPhotos: function() {
-        // the notifications are not working for some reason... so we won't do anything asynchronously
-        // we will just make the call to the method to get the object with photo links....
-        //Log.info('sending socket notification: INSTAGRAM_GET and URL: ' + this.url);
-        this.sendSocketNotification("INSTAGRAM_GET", this.url);
-        
-        // this may not be needed... need to think about it.
-        //setTimeout(this.grabPhotos, this.config.interval, this);
-    },
-    
-    
     getStyles: function() {
         return ['instagram.css', 'font-awesome.css'];
     },
@@ -70,28 +53,23 @@ Module.register('MMM-Instagram', {
             wrapper.innerHTML = this.config.loadingText;
             return wrapper;
         }
-        
+
         // set the first item in the list...
         if (this.activeItem >= this.images.photo.length) {
             this.activeItem = 0;
         }
-        
-        var tempimage = this.images.photo[this.activeItem];
-        
-        // image       
-	//imageLink.innerHTML = "<img src='https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png'>";
-        
+
+        var tempImage = this.images.photo[this.activeItem];
 
         var imageWrapper = document.createElement("img");
-	    imageWrapper.src = tempimage.photolink;
-	    imageWrapper.id = "MMM-Instagram-image";
-	    imageWrapper.style.maxWidth = this.config.instaMaxWidth;
-	    imageWrapper.style.maxHeight = this.config.instaMaxHeight;
-	    imageDisplay.appendChild(imageWrapper);
-        
+  	    imageWrapper.src = tempImage.photolink;
+  	    imageWrapper.id = "MMM-Instagram-image";
+  	    imageWrapper.style.maxWidth = this.config.instaMaxWidth;
+  	    imageWrapper.style.maxHeight = this.config.instaMaxHeight;
+  	    imageDisplay.appendChild(imageWrapper);
 
-	wrapper.appendChild(imageDisplay);
-       
+	      wrapper.appendChild(imageDisplay);
+
         return wrapper;
     },
 
@@ -112,16 +90,22 @@ Module.register('MMM-Instagram', {
     },
 
     /*
-     * getParams()
-     * returns the query string required for the request to flickr to get the 
-     * photo stream of the user requested
+     * getApiUrls()
+     * returns the query strings required for the request to instagram to get the
+     * photo streams of the users requested
      */
-    getParams: function() {
-        var params = '?';
-        params += 'count=' + this.config.count;
-        params += '&min_timestamp=' + this.config.min_timestamp;
-        params += '&access_token=' + this.config.access_token;
-        return params;
+    getApiUrls: function() {
+        var tokens = this.config.access_token || this.config.access_tokens; //default for backwards compatibility
+        if(!Array.isArray(tokens)){
+          tokens = [tokens];
+        }
+        return tokens.map(token => {
+          var url = this.config.apiUrl + '?';
+          url += 'count=' + this.config.count;
+          url += '&min_timestamp=' + this.config.min_timestamp;
+          url += '&access_token=' + token;
+          return url;
+        });
     },
 
     // override socketNotificationReceived
@@ -129,17 +113,14 @@ Module.register('MMM-Instagram', {
         //Log.info('socketNotificationReceived: ' + notification);
         if (notification === 'INSTAGRAM_IMAGE_LIST')
         {
-            //Log.info('received INSTAGRAM_IMAGE_LIST');
             this.images = payload;
-            
-            //Log.info("count: " +  this.images.photo.length);
-            
+
             // we want to update the dom the first time and then schedule next updates
             if (!this.loaded) {
-            this.updateDom(1000);
-                this.scheduleUpdateInterval();
+              this.updateDom(1000);
+              this.scheduleUpdateInterval();
             }
-            
+
             this.loaded = true;
         }
     }
