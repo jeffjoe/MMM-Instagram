@@ -18,6 +18,7 @@ Module.register('MMM-Instagram', {
         updateInterval: 60000, // 10 minutes
         access_token: '',
         count: 200,
+        randomize: false,
         min_timestamp: 0,
         instaMaxWidth: '100%',
         instaMaxHeight: '100%',
@@ -34,7 +35,7 @@ Module.register('MMM-Instagram', {
         Log.info('Starting module: ' + this.name);
         this.data.classes = 'bright medium';
         this.loaded = false;
-        this.images = {};
+        this.images = [];
         this.activeItem = 0;
         this.apiUrls = this.getApiUrls();
         this.sendSocketNotification("INSTAGRAM_GET", this.apiUrls);
@@ -55,11 +56,11 @@ Module.register('MMM-Instagram', {
         }
 
         // set the first item in the list...
-        if (this.activeItem >= this.images.photo.length) {
+        if (this.activeItem >= this.images.length) {
             this.activeItem = 0;
         }
 
-        var tempImage = this.images.photo[this.activeItem];
+        var tempImage = this.images[this.activeItem];
 
         var imageWrapper = document.createElement("img");
   	    imageWrapper.src = tempImage.photolink;
@@ -108,12 +109,22 @@ Module.register('MMM-Instagram', {
         });
     },
 
+    shuffle: function(array) {
+      for (var i = array.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var temp = array[i];
+          array[i] = array[j];
+          array[j] = temp;
+      }
+      return array;
+    },
+
     // override socketNotificationReceived
     socketNotificationReceived: function(notification, payload) {
         //Log.info('socketNotificationReceived: ' + notification);
         if (notification === 'INSTAGRAM_IMAGE_LIST')
         {
-            this.images = payload;
+            this.images = this.config.randomize ? this.shuffle(payload) : payload;
 
             // we want to update the dom the first time and then schedule next updates
             if (!this.loaded) {

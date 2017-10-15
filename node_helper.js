@@ -6,7 +6,6 @@
  */
 
  var NodeHelper = require("node_helper");
- var request = require('request');
  var rp = require('request-promise-native');
 
  module.exports = NodeHelper.create({
@@ -41,11 +40,11 @@
       });
       Promise.all(promises)
         .then(results => {
-          self.sendSocketNotification('INSTAGRAM_IMAGE_LIST', {
-            photo: results.reduce((acc, item) => {
+          self.sendSocketNotification('INSTAGRAM_IMAGE_LIST',
+            results.reduce((acc, item) => {
               return acc.concat(item);
             }, [])
-          });
+          );
         }).catch(error => {
           console.log("Error: ", error);
         });
