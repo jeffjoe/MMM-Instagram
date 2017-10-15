@@ -24,7 +24,7 @@ The entry in `config.js` can include the following options:
 
 |Option|Description|
 |---|---|
-|`access_token(s)`|Access token(s) which is received from Instagram<br><br>**Type:** `array of strings`<br>At least one value is **REQUIRED**|
+|`access_token(s)`|Access token(s) which is received from Instagram<br><br>**Type:** `string or array of strings`<br>At least one value is **REQUIRED**|
 |`count`|Number of pictures to pull from the feed.<br><br>This value is **REQUIRED**|
 |`min_timestamp`|Set to 0 to pull images from when you created the account.<br><br>This value is **REQUIRED**|
 |`animationSpeed`|How long the fade out and fade in of photos should take.<br><br>This value is **REQUIRED**|
